@@ -94,26 +94,27 @@
 
             <!-- 功能按鈕區 -->
             <div class="action-grid">
-                <button id="btn-add-transaction" class="action-card income">
-                    <span class="icon">✏️</span>
-                    <span>記一筆</span>
-                </button>
-                <button id="btn-manage-category" class="action-card expense">
-                    <span class="icon">🗂️</span>
-                    <span>管理分類</span>
-                </button>
-            </div>
+    <button id="btn-add-transaction" class="action-card income">
+        <span class="icon">✏️</span>
+        <span>記一筆</span>
+    </button>
+    <button id="btn-manage-category" class="action-card expense">
+        <span class="icon">🗂️</span>
+        <span>管理分類</span>
+    </button>
+</div>
 
-            <!-- 交易紀錄 -->
-            <div class="list-container">
-                <h3 id="transaction-list-title">11月收支</h3>
-                <div id="transaction-list" class="transaction-list">
-                    <!-- 動態載入 -->
-                </div>
-            </div>
-        </section>
-
+<div class="chart-container" style="margin: 20px 0; padding: 15px; background: white; border-radius: 15px; box-shadow: 0 4px 15px rgba(0,0,0,0.05);">
+    <h3 style="text-align: center; margin-bottom: 10px; color: #555;">📊 本月消費比例</h3>
+    <div style="position: relative; height: 300px; width: 100%;">
+        <canvas id="expenseChart"></canvas>
     </div>
+</div>
+<div class="list-container">
+    <h3 id="transaction-list-title">11月收支</h3>
+    <div id="transaction-list" class="transaction-list">
+        </div>
+</div>
 
     <!-- 隱藏的 Template 用於 SweetAlert -->
     <template id="tpl-transaction-form">
@@ -147,6 +148,12 @@
     </template>
 
     <script src="https://cdn.jsdelivr.net/npm/sweetalert2@11"></script>
+    <script src="config.js"></script>
+    <script src="app.js"></script>
+    <script src="https://cdn.jsdelivr.net/npm/sweetalert2@11"></script>
+    
+    <script src="https://cdn.jsdelivr.net/npm/chart.js"></script>
+
     <script src="config.js"></script>
     <script src="app.js"></script>
 </body>

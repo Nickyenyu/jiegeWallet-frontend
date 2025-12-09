@@ -3,6 +3,7 @@ let token = localStorage.getItem("token") || null;
 let categories = [];
 let transactions = [];
 let budget = { id: "1", amount: "0" };
+let expenseChart = null; // ★★★ 新增這一行 ★★★
 
 // ===== DOM Elements =====
 const landingSection = document.getElementById("landing-section");
@@ -118,6 +119,7 @@ async function loadTransactions() {
   transactions = data.data || [];
   renderTransactions();
   updateSummary();
+  renderChart(); // ★★★ 新增這一行 ★★★
 }
 
 async function loadBudget() {
@@ -234,6 +236,105 @@ function updateSummary() {
   }
 }
 
+// ★★★ 繪製圓餅圖函式 ★★★
+function renderChart() {
+  const ctx = document.getElementById("expenseChart");
+  if (!ctx) return; // 防呆：找不到畫布就不畫
+
+  // 1. 取得當前月份
+  const now = new Date();
+  const currentMonth = now.getMonth();
+  const currentYear = now.getFullYear();
+
+  // 2. 篩選資料：必須是「當月」且是「支出」
+  const monthlyExpenses = transactions.filter((txn) => {
+    const txnDate = new Date(txn.date);
+    return (
+      txnDate.getMonth() === currentMonth &&
+      txnDate.getFullYear() === currentYear &&
+      txn.type === "expense"
+    );
+  });
+
+  // 如果這個月沒有支出，清空舊圖表並離開
+  if (monthlyExpenses.length === 0) {
+    if (expenseChart) {
+      expenseChart.destroy();
+      expenseChart = null;
+    }
+    return;
+  }
+
+  // 3. 資料聚合：依照「類別名稱」加總金額
+  // accumulator (acc) 是一個物件，用來累積數據
+  const dataMap = monthlyExpenses.reduce((acc, txn) => {
+    const name = txn.category_name;
+    if (!acc[name]) {
+      acc[name] = {
+        amount: 0,
+        color: txn.category_color_hex || "#cccccc" // 使用資料庫存的顏色
+      };
+    }
+    acc[name].amount += Number(txn.amount);
+    return acc;
+  }, {});
+
+  // 4. 轉換成 Chart.js 看得懂的陣列格式
+  const labels = Object.keys(dataMap); // 類別名稱陣列
+  const data = labels.map(name => dataMap[name].amount); // 金額陣列
+  const colors = labels.map(name => dataMap[name].color); // 顏色陣列
+
+  // 5. 繪製圖表
+  // 如果舊圖表存在，先銷毀它 (避免滑鼠移上去時閃爍)
+  if (expenseChart) {
+    expenseChart.destroy();
+  }
+
+  expenseChart = new Chart(ctx, {
+    type: "doughnut", // 甜甜圈圖
+    data: {
+      labels: labels,
+      datasets: [{
+        data: data,
+        backgroundColor: colors,
+        borderWidth: 2,
+        borderColor: "#ffffff",
+        hoverOffset: 10 // 滑鼠移上去會放大一點點
+      }]
+    },
+    options: {
+      responsive: true,
+      maintainAspectRatio: false,
+      plugins: {
+        legend: {
+          position: 'bottom',
+          labels: {
+            usePointStyle: true, // 圖例變成圓點
+            padding: 20,
+            font: {
+              family: "'Varela Round', sans-serif"
+            }
+          }
+        },
+        tooltip: {
+          callbacks: {
+            // 讓提示框顯示金錢符號 $
+            label: function(context) {
+              let label = context.label || '';
+              if (label) {
+                label += ': ';
+              }
+              if (context.parsed !== null) {
+                label += '$' + context.parsed.toLocaleString();
+              }
+              return label;
+            }
+          }
+        }
+      }
+    }
+  });
+}
 // ===== SweetAlert Flows =====
 
 // 設定預算彈窗
